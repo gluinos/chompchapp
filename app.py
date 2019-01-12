@@ -36,12 +36,25 @@ def Index():
 @app.route("/query", methods=['POST'])
 def Query():
     """ Handle requests """
-    data = request.data
-    print(data)
-    task = APICall.apply_async(args=[data])
-    return jsonify({}), 202, {'Location': url_for('Status', taskID=task.id)}
+    if request.data:
+        data = request.json["data"]
+    else:
+        data = {}
+    task = APICall.apply_async(kwargs={ "data":data })
+    return jsonify({}), 202, { "Location": url_for("Status", taskID=task.id) }
+
+@app.route("/status/<taskID>")
+def Status(taskID):
+    task = APICall.AsyncResult(taskID)
+    response = { "state": task.state }
+    if task.state != "FAILURE" and task.info:
+        response["status"] = task.info.get("status", "")
+        if "result" in task.info:
+            response["result"] = task.info["result"]
+
+    return jsonify(response)
 
 if __name__ == "__main__":
     app.debug = True
-    port = int(os.environ.get("PORT",3000))
+    port = int(os.environ.get("PORT", 3000))
     app.run(host="0.0.0.0", port=port)
