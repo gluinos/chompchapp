@@ -1,10 +1,10 @@
-var counter = 0;
-var countMax = 6;
-var index = 0;
-var pause = false;
-var len = words.length; // array stored in words.js
+var counter;
+var countMax;
+var index;
+var pause;
+var len;
 
-var data = { "words": [] }
+var data;
 
 function APICall(data) {
     var mainDiv = $("#main");
@@ -31,7 +31,7 @@ function Update(statusURL, mainDiv, resultDiv) {
         console.log(data);
         if (data.state === "SUCCESS" && data.hasOwnProperty("result")) {
             console.log("success!");
-            resultDiv.append(`<p>${JSON.stringify(data.result)}</p>`);
+            resultDiv.html(`<p>${JSON.stringify(data.result)}</p>`);
         }
         else if (data.state === "FAILURE") {
             console.log("failure!");
@@ -70,28 +70,40 @@ async function WordLoop(callback) {
     callback(data);
 };
 
+function Reset() {
+    $("#progress").attr("style", "width: 0%");
+    counter = 0;
+    countMax = 6;
+    index = 0;
+    pause = false;
+    len = words.length; // array stored in words.js
+
+    data = { "words": [] };
+
+    WordLoop(APICall);
+}
+
 
 $(function() {
-    // Initialize Result Modal
-    $("#result-modal").modal({ show: false });
+    // Handle modal hide
+    $(document).on("hidden.bs.modal", function(event) { Reset() });
     // Handle keyup
     $(document).on("keyup", function(event) {
-        event.preventDefault();
         if (event.keyCode === 32 && counter !== countMax) {
+            event.preventDefault();
             counter++;
             pause = false;
-            $("#progress").attr("style", `width: ${Math.round(100*counter/countMax)}%`);
+            $("#progress").attr("style", `width: ${ Math.round(100*counter/countMax) }%`);
             data.words.push($("#word").text());
         }
     });
     // Handle keydown
     $(document).on("keydown", function(event) {
-        event.preventDefault();
         if (event.keyCode === 32 && counter !== countMax) {
+            event.preventDefault();
             pause = true;
             $("#word").addClass("text-success");
         }
     });
-    // Start loop
-    WordLoop(APICall);
+    Reset();
 });
