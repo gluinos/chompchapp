@@ -37,7 +37,7 @@ def Index():
 def Query():
     """ Handle requests """
     if request.data:
-        data = request.json["data"]
+        data = request.json["words"]
     else:
         data = {}
     task = APICall.apply_async(kwargs={ "data":data })
