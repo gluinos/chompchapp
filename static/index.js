@@ -53,7 +53,7 @@ async function WordLoop(callback) {
 
     while(1) {
         if (!pause) {
-            $("#word").text(words[index]).removeClass("text-success");
+            $("#word").text(words[index]).removeClass("text-info");
             // $("#image").attr("src", "data:image/jpeg;base64,"+images[index]);
         }
 
@@ -105,7 +105,7 @@ $(function() {
         if (event.keyCode === 32 && counter !== countMax) {
             event.preventDefault();
             pause = true;
-            $("#word").addClass("text-success");
+            $("#word").addClass("text-info");
         }
     });
     Reset();
