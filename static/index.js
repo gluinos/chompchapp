@@ -54,6 +54,7 @@ async function WordLoop(callback) {
     while(1) {
         if (!pause) {
             $("#word").text(words[index]).removeClass("text-success");
+            // $("#image").attr("src", "data:image/jpeg;base64,"+images[index]);
         }
 
         if (counter >= countMax) {
@@ -76,7 +77,9 @@ function Reset() {
     countMax = 6;
     index = 0;
     pause = false;
+    // len = images.length; // array stored in images.js
     len = words.length; // array stored in words.js
+
 
     data = { "words": [] };
 
