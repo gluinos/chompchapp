@@ -33,6 +33,11 @@ def Index():
     """ Main page """
     return render_template("index.html")
 
+@app.route("/features", methods=['GET'])
+def Features():
+    """ Feature page """
+    return render_template("features.html")
+
 @app.route("/query", methods=['POST'])
 def Query():
     """ Handle requests """
