@@ -26,7 +26,7 @@ def APICall(data={}):
     """ Asynchronous call to ChompChap API """
     result = api.Call(data)
 
-    return { "result": result }
+    return { "result": result, "status": "SUCCESS" }
 
 @app.route("/", methods=['GET', 'POST'])
 def Index():
@@ -52,9 +52,7 @@ def Query():
 def Status(taskID):
     task = APICall.AsyncResult(taskID)
     response = { "state": task.state }
-    if task.state != "FAILURE" and task.info:
-        response["status"] = task.info.get("status", "")
-        if "result" in task.info:
+    if task.state != "FAILURE" and task.info and "result" in task.info:
             response["result"] = task.info["result"]
 
     return jsonify(response)
