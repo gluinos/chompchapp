@@ -4,7 +4,9 @@ if [ ! -d redis-stable/src ]; then
     tar xvzf redis-stable.tar.gz
     rm redis-stable.tar.gz
 fi
+cd redis-stable
 make
+cd ..
 redis-stable/src/redis-server &
 celery worker -A app.celery --loglevel=info &
 python app.py
