@@ -41,11 +41,8 @@ def Features():
 @app.route("/query", methods=['POST'])
 def Query():
     """ Handle requests """
-    if request.data:
-        data = request.json["words"]
-    else:
-        data = {}
-    task = APICall.apply_async(kwargs={ "data":data })
+    task = APICall.apply_async(kwargs={ "data": request.data })
+
     return jsonify({}), 202, { "Location": url_for("Status", taskID=task.id) }
 
 @app.route("/status/<taskID>")

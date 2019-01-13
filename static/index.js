@@ -6,6 +6,7 @@ var len;
 
 var data;
 var coords;
+var userCoords;
 
 function InitMap() {
     var localCoords = coords || { lat: 34.412, lng: -119.86 };
@@ -19,7 +20,6 @@ function InitMap() {
 function APICall(data) {
     var mainDiv = $("#main");
     var resultDiv = $("#result");
-    console.log("passing "+String($("#data").val())+" as 'data'");
     $.ajax({
         type: 'POST',
         url: '/query',
@@ -36,20 +36,17 @@ function APICall(data) {
 }
 
 function Update(statusURL, mainDiv, resultDiv) {
-    $.getJSON(statusURL, function(data) {
-        console.log("Update call");
-        console.log(data);
-        if (data.state === "SUCCESS" && data.hasOwnProperty("result")) {
-            coords = data.result.coords;
+    $.getJSON(statusURL, function(response) {
+        if (response.state === "SUCCESS" && response.hasOwnProperty("result")) {
+            coords = response.result.coords;
             console.log("success!");
-            resultDiv.html(`<p>You should try ${data.result.name}!</p>`);
+            resultDiv.html(`<p>You should try ${response.result.name}!</p>`);
             InitMap();
         }
-        else if (data.state === "FAILURE") {
+        else if (response.state === "FAILURE") {
             console.log("failure!");
         }
         else {
-            console.log(data);
             setTimeout(function() {
                 Update(statusURL, mainDiv, resultDiv);
             }, 250);
@@ -69,7 +66,6 @@ async function WordLoop(callback) {
         }
 
         if (counter >= countMax) {
-            console.log(data);
             $('#result-modal').modal("show");
             break;
         }
@@ -92,13 +88,20 @@ function Reset() {
     len = words.length; // array stored in words.js
 
 
-    data = { "words": [] };
+    data = { "words": [], "coords": userCoords };
     coords = { lat: 34.412, lng: -119.86 };
 
     WordLoop(APICall);
 }
 
 $(function() {
+    navigator.geolocation.getCurrentPosition(
+        // Success callback
+        function(position) {
+            userCoords = { lat: position.coords["latitude"], lng: position.coords["longitude"] };
+            data.coords = userCoords;
+        }
+    );
     // Handle modal hide
     $(document).on("hidden.bs.modal", function(event) { Reset() });
     // Handle keyup
