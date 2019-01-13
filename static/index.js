@@ -5,7 +5,17 @@ var pause;
 var len;
 
 var data;
-var DUMMYDATA = { "name":"PF Chang's", "location":{ lat: 34.412, lng: -119.8 } }; // DEBUG ONLY
+var coords;
+const DUMMYDATA = { "name":"PF Chang's", "coords":{ lat: 34.174238, lng: -118.845426 } }; // DEBUG ONLY
+
+function InitMap() {
+    var localCoords = coords || { lat: 34.412, lng: -119.86 };
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: localCoords.lat, lng: localCoords.lng },
+        zoom: 15
+    });
+    var marker = new google.maps.Marker({ position: { lat: localCoords.lat, lng: localCoords.lng }, map: map });
+}
 
 function APICall(data) {
     var mainDiv = $("#main");
@@ -31,9 +41,10 @@ function Update(statusURL, mainDiv, resultDiv) {
         console.log("Update call");
         console.log(data);
         if (data.state === "SUCCESS" && data.hasOwnProperty("result")) {
-            var data = DUMMYDATA; // DEBUG ONLY
+            coords = data.result.coords;
             console.log("success!");
-            resultDiv.html(`<p>You should try ${data.name}!</p>`);
+            resultDiv.html(`<p>You should try ${data.result.name}!</p>`);
+            InitMap();
         }
         else if (data.state === "FAILURE") {
             console.log("failure!");
@@ -83,6 +94,7 @@ function Reset() {
 
 
     data = { "words": [] };
+    coords = { lat: 34.412, lng: -119.86 };
 
     WordLoop(APICall);
 }
