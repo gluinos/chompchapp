@@ -58,15 +58,7 @@
                     </div>
                     <div class="modal-body">
                         <p id="result"></p>
-                        <div id="map">
-                            <iframe
-                                width="80%"
-                                height="450"
-                                frameborder="0" style="border:0"
-                                src="https://www.google.com/maps/embed/v1/place?key=AIzaSyC0VnHipB7KP9OEhRz7n59sryyJjvP2TRs
-                                  &q=Space+Needle,Seattle+WA" allowfullscreen>
-                            </iframe>
-                        </div>
+                        <div id="map" style="height: 450px; width:80%; margin: 0 auto;"></div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -79,4 +71,6 @@
     <script src="{{ url_for('static', filename='words.js') }}"></script>
     <script src="{{ url_for('static', filename='images.js') }}"></script>
     <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0VnHipB7KP9OEhRz7n59sryyJjvP2TRs&callback=InitMap"
+    async defer></script>
 </html>
