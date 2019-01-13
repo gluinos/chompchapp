@@ -18,27 +18,28 @@
     </head>
 
     <body class="text-center">
-        <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+        <div class="d-flex w-100 h-100 p-3 mx-auto flex-column" style="width: 56em !important;">
             <header class="masthead mb-auto">
                 <div class="inner">
                     <h3 class="masthead-brand">ChompChap</h3>
                     <nav class="nav nav-masthead justify-content-center">
-                        <a class="nav-link active" href="/">Home</a>
-                        <a class="nav-link" href="/features">Features</a>
+                        <a class="nav-link" href="/">Home</a>
+                        <a class="nav-link active" href="/features">Features</a>
                         <a class="nav-link" href="https://github.com/gluinos">Github</a>
                     </nav>
                 </div>
             </header>
 
             <main role="main" class="inner cover">
-                <h1 id="word" class="cover-heading"></h1>
-                <!-- <figure class="figure">
-                    <img id="image" src="" class="figure-img img-fluid border rounded" alt="Responsive image">
-                </figure> -->
-                <div class="progress">
-                    <div id="progress" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+                <div class="row text-left" style="display: block;">
+                    <h1 id="word">Machine Learning Algorithms</h1>
+                    <p>ChompChamp employs a Long Short-Term Memory (LSTM) Classifier to associate keywords from Yelp reviews to their respective restaurants.</p>
                 </div>
-                <p class="lead">Press spacebar whenever you see a word that feels right.</p>
+                <hr>
+                <div class="row text-right" style="display: block;">
+                    <h1 id="word">Simple Backend Infrastructure</h1>
+                    <p>This web application is powered by a Flask-Celery backend on a Redis server.</p>
+                </div>
             </main>
 
             <footer class="mastfoot mt-auto">
@@ -47,30 +48,5 @@
                 </div>
             </footer>
         </div>
-        <div class="modal fade" tabindex="-1" role="dialog" id="result-modal" style="color: #000; text-shadow: none;">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Result</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        <p id="result"></p>
-                        <div id="map" style="height: 450px; width:80%; margin: 0 auto;"></div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        </div>
     </body>
-    <!-- Javascript -->
-    <script src="{{ url_for('static', filename='words.js') }}"></script>
-    <script src="{{ url_for('static', filename='images.js') }}"></script>
-    <script src="{{ url_for('static', filename='index.js') }}"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0VnHipB7KP9OEhRz7n59sryyJjvP2TRs&callback=InitMap"
-    async defer></script>
 </html>

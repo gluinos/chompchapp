@@ -1,212 +1,123 @@
-function APICall(type) {
-    $("#main").hide();
-    $("#load").show();
-    var query = {};
-    query[type] = $(`#${type}`).val();
+var counter;
+var countMax;
+var index;
+var pause;
+var len;
+
+var data;
+var coords;
+
+function InitMap() {
+    var localCoords = coords || { lat: 34.412, lng: -119.86 };
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat: localCoords.lat, lng: localCoords.lng },
+        zoom: 15
+    });
+    var marker = new google.maps.Marker({ position: { lat: localCoords.lat, lng: localCoords.lng }, map: map });
+}
+
+function APICall(data) {
+    var mainDiv = $("#main");
+    var resultDiv = $("#result");
+    console.log("passing "+String($("#data").val())+" as 'data'");
     $.ajax({
-        type: "POST",
-        url: "/query",
-        data: JSON.stringify(query),
-        contentType: "application/json;charset=UTF-8",
+        type: 'POST',
+        url: '/query',
+        data: JSON.stringify(data),
+        contentType: 'application/json;charset=UTF-8',
         success: function(data, status, request) {
-            $("#load-img").hide();
-            $("#load").hide();
-            console.log(data);
-            Result(type, data);
+            statusURL = request.getResponseHeader('Location');
+            Update(statusURL, mainDiv, resultDiv);
         },
         error: function() {
-            alert("Unexpected error");
-            $("#load").hide();
-            $("#load-img").hide();
-            $("#main").show();
+            alert('Unexpected error');
         }
     });
 }
-function Result(type, data) {
-    var resultDiv = $("#result");
-    var resultColors = $("#result-colors");
-    var resultURL = $("#result-url");
-    if (data.hasOwnProperty("result")) {
-        resultURL.html((type === "url") ? $("#url").val() : "Result");
-        resultColors.html("");
-        var colors = (data.result.colors).sort(function(a,b) { return (a.hsl[0]-b.hsl[0])*(a.hsl[1]-b.hsl[1])*(a.hsl[2]-b.hsl[2]) });
-        for (var i = 0; i < colors.length; i++) {
-            var rgb = colors[i].rgb;
-            var hex = colors[i].hex;
-            var hsl = colors[i].hsl;
-            colors[i]["lum"] = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
-            var txtColor = TextColor(colors[i].lum);
-            resultColors.append(`
-                <div class="col-md-4 d-flex align-items-stretch" style="padding-bottom: 5px;">
-                  <div class="card" id="color-card${i}" style="width: 100%;">
-                    <a tabindex="0" href="${hex}" id="color-link${i}" name="${i}" data-html="true" data-toggle="popover" data-trigger="focus" data-placement="bottom" data-content="<span>Copied <code>${hex}</code> to clipboard!</span>">
-                      <div class="card-body" id="color-body${i}" style="color: ${txtColor}">
-                        ${hex}
-                        <textarea id="color-code${i}" style="height: 0; width: 0; opacity: 0;" readonly />
-                      </div>
-                    </a>
-                  </div>
-                </div>
-            `);
-            $(`#color-card${i}`).css({ "background-color": hex });
-            $(`#color-code${i}`).val(hex);
+
+function Update(statusURL, mainDiv, resultDiv) {
+    $.getJSON(statusURL, function(data) {
+        console.log("Update call");
+        console.log(data);
+        if (data.state === "SUCCESS" && data.hasOwnProperty("result")) {
+            coords = data.result.coords;
+            console.log("success!");
+            resultDiv.html(`<p>You should try ${data.result.name}!</p>`);
+            InitMap();
         }
-        // Event handler: copy value to clipboard
-        $("a[id^='color-link']").on("click", function(event) {
-            event.preventDefault();
-            $(`#color-code${this.name}`).select();
-            document.execCommand("copy");
-            this.focus();
-        });
-        // Initialize popovers
-        $("[data-toggle='popover']").popover();
-        $(".popover-dismiss").popover({
-            trigger: "focus"
-        });
-        resultDiv.show();
-        // Change website's color scheme
-        SetScheme(colors);
-    }
-}
-function SetScheme(colors) {
-    if (colors.length != 0) {
-        // Choose colors
-        var bgIndex = Math.floor(Math.random()*(colors.length));
-        var hlIndex = PickHighlight(colors, bgIndex);
-        var btIndex = PickHighlight(colors, hlIndex);
-        // Get color properties
-        var bgHex = colors[bgIndex].hex;
-        var hlHex = colors[hlIndex].hex;
-        var btHex = colors[btIndex].hex;
-        var bgLum = colors[bgIndex].lum;
-        var hlLum = colors[hlIndex].lum;
-        var btLum = colors[btIndex].lum;
-        // Apply main formatting
-        $("html, body").css("background-color", bgHex);
-        $("html, body").css("color", TextColor(bgLum));
-        // Apply highlight formatting
-        $(".navbar.navbar-expand-md.navbar-dark.fixed-top").attr("style", `background-color: ${hlHex} !important;`);
-        $("a").css("color", TextColor(hlLum));
-        $(".jumbotron").css("background-color", hlHex);
-        $(".jumbotron").css("color", TextColor(hlLum));
-        // Apply additional formatting
-        $(":button").css("background-color", btHex);
-        $(":button").css("border-color", btHex);
-        $(":button").css("color", TextColor(btLum));
-
-        return;
-    }
-}
-function TextColor(lum) {
-    return (lum > 192) ? "#000" : "#fff";
-}
-function PickHighlight(colors, bgIndex) {
-    // Randomly assign color
-    var hlIndex = Math.floor(Math.random()*(colors.length));
-    if (hlIndex === bgIndex) {
-        hlIndex += ((hlIndex === colors.length-1) ? -1 : 1);
-    }
-    // Get background color properties
-    var bgLum = colors[bgIndex].lum;
-    var bgHSL = colors[bgIndex].hsl;
-    // Get highlight color properties
-    var hlLum = colors[hlIndex].lum;
-    var hlHSL = colors[hlIndex].hsl;
-    // Check for better highlight colors
-    var curLumDiff = Math.abs(bgLum - hlLum);
-    var curHSLDiff = [ Math.abs(bgHSL[0] - hlHSL[0]),
-                       Math.abs(bgHSL[1] - hlHSL[1]),
-                       Math.abs(bgHSL[2] - hlHSL[2]) ];
-    var curQuality = (0.5*curLumDiff+0.25*(1/curHSLDiff[0])+0.25*(1/curHSLDiff[1])); // Weighted average of qualities
-    for (var i = 0; i < colors.length; i++) {
-        if (i !== bgIndex) {
-            var hsl = colors[i].hsl;
-            var lum = colors[i].lum;
-            var newLumDiff = Math.abs(bgLum - lum);
-            var newHSLDiff = [ Math.abs(bgHSL[0] - hsl[0]),
-                               Math.abs(bgHSL[1] - hsl[1]),
-                               Math.abs(bgHSL[2] - hsl[2]) ];
-            var newQuality = (0.5*newLumDiff+0.25*(1/newHSLDiff[0])+0.25*(1/newHSLDiff[1])); // Weighted average of qualities
-            if (newQuality > curQuality) {
-                hlIndex = i;
-            }
+        else if (data.state === "FAILURE") {
+            console.log("failure!");
         }
+        else {
+            console.log(data);
+            setTimeout(function() {
+                Update(statusURL, mainDiv, resultDiv);
+            }, 250);
+        }
+    });
+}
+
+function Sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function WordLoop(callback) {
+    while(1) {
+        if (!pause) {
+            $("#word").text(words[index]).removeClass("text-info");
+            // $("#image").attr("src", "data:image/jpeg;base64,"+images[index]);
+        }
+
+        if (counter >= countMax) {
+            console.log(data);
+            $('#result-modal').modal("show");
+            break;
+        }
+
+        index = (index + 1) % len;
+
+        await Sleep(500 - 375*(counter/countMax));
     }
 
-    return hlIndex;
-}
-function CheckInput(type) {
-    var input = $(`#${type}`).val();
-    if (type === "url") {
-        // Whole URL string checks
-        var hasWWW = (input.indexOf("www") >= 0);
-        var colonDoubleSlash = (input.indexOf("://") >= 4);
-        var valHTTP = (colonDoubleSlash && (input.split("://")[0] === "http" || input.split("://")[0] === "https"));
-        var noWhiteSpace = (input.indexOf(" ") < 0);
-        // Split (on '.') URL string checks
-        var splitInput = input.split(".");
-        var twoDots = (splitInput.length === 3);
-        var notEmpty = (splitInput[0] !== "" && splitInput[1] !== "" && splitInput[2] !== "");
+    callback(data);
+};
 
-        return (hasWWW && valHTTP && colonDoubleSlash && noWhiteSpace && twoDots && notEmpty);
-    }
-    else if (type === "img") {
-        return (input !== "");
-    }
-    else {
-        return false;
-    }
-}
 function Reset() {
-    // Reset display
-    $("#load").hide();
-    $("#result").hide();
-    $("#main").show();
-    // Reset form
-    $("#img").val("");
-    $("#img-upload").val("");
-    $("#url").val("");
-    $("#submit").attr("disabled", !CheckInput($("input[name=radio-buttons]:checked").val()));
-}
-$(function() {
-    // Startup actions
-    $("#load").hide();
-    $("#result").hide();
-    $("#url-radio").attr("checked", true);
-    // Initial input check
-    $("#submit").attr("disabled", !CheckInput("url"));
-    $("#img-upload").attr("disabled", true);
-    // Silence 'Enter' keypress
-    $(window).keydown(function(event) {
-        if (event.keyCode == 13) {
-            event.preventDefault();
-            return false;
-        }
-    });
-    // Handle radio menu
-    $("input[name=radio-buttons]").on("change", function(e) {
-        $("#img-upload").attr("disabled", (e.target.value !== "img"));
-        $("#url").attr("disabled", (e.target.value !== "url"));
-        $("#submit").attr("disabled", !CheckInput(e.target.value));
-    });
-    // Handle image upload
-    $("#img-upload").on("change", function(e) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var b64 = (reader.result).split("base64,")[1];
-            $("#img").val(b64);
-            $("#submit").attr("disabled", !CheckInput("img"));
-        }
+    $("#progress").attr("style", "width: 0%");
+    counter = 0;
+    countMax = 6;
+    index = 0;
+    pause = false;
+    // len = images.length; // array stored in images.js
+    len = words.length; // array stored in words.js
 
-        reader.readAsDataURL(e.target.files[0]);
+
+    data = { "words": [] };
+    coords = { lat: 34.412, lng: -119.86 };
+
+    WordLoop(APICall);
+}
+
+$(function() {
+    // Handle modal hide
+    $(document).on("hidden.bs.modal", function(event) { Reset() });
+    // Handle keyup
+    $(document).on("keyup", function(event) {
+        if (event.keyCode === 32 && counter !== countMax) {
+            event.preventDefault();
+            counter++;
+            pause = false;
+            $("#progress").attr("style", `width: ${ Math.round(100*counter/countMax) }%`);
+            data.words.push($("#word").text());
+        }
     });
-    // Handle url input
-    $("#url").on("keyup", function(e) {
-        $("#submit").attr("disabled", !CheckInput("url"));
+    // Handle keydown
+    $(document).on("keydown", function(event) {
+        if (event.keyCode === 32 && counter !== countMax) {
+            event.preventDefault();
+            pause = true;
+            $("#word").addClass("text-info");
+        }
     });
-    // Submit query
-    $("#submit").on("click", function() {
-        var type = $("input[name=radio-buttons]:checked").val();
-        APICall(type);
-    });
-})
+    Reset();
+});
