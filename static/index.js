@@ -6,7 +6,6 @@ var len;
 
 var data;
 var coords;
-const DUMMYDATA = { "name":"PF Chang's", "coords":{ lat: 34.174238, lng: -118.845426 } }; // DEBUG ONLY
 
 function InitMap() {
     var localCoords = coords || { lat: 34.412, lng: -119.86 };
