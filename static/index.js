@@ -5,6 +5,7 @@ var pause;
 var len;
 
 var data;
+var DUMMYDATA = { "name":"PF Chang's", "location":{ lat: 34.412, lng: -119.8 } }; // DEBUG ONLY
 
 function APICall(data) {
     var mainDiv = $("#main");
@@ -30,8 +31,9 @@ function Update(statusURL, mainDiv, resultDiv) {
         console.log("Update call");
         console.log(data);
         if (data.state === "SUCCESS" && data.hasOwnProperty("result")) {
+            var data = DUMMYDATA; // DEBUG ONLY
             console.log("success!");
-            resultDiv.html(`<p>${JSON.stringify(data.result)}</p>`);
+            resultDiv.html(`<p>You should try ${data.name}!</p>`);
         }
         else if (data.state === "FAILURE") {
             console.log("failure!");
@@ -50,7 +52,6 @@ function Sleep(ms) {
 }
 
 async function WordLoop(callback) {
-
     while(1) {
         if (!pause) {
             $("#word").text(words[index]).removeClass("text-info");
@@ -85,7 +86,6 @@ function Reset() {
 
     WordLoop(APICall);
 }
-
 
 $(function() {
     // Handle modal hide
