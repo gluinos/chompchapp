@@ -9,15 +9,17 @@ var coords;
 var userCoords;
 
 function InitMap() {
-    var localCoords = coords || { lat: 34.412, lng: -119.86 };
+    var localCoords = coords || { latitude: 34.412, longitude: -119.86 };
     map = new google.maps.Map(document.getElementById('map'), {
-        center: { lat: localCoords.lat, lng: localCoords.lng },
+        center: { lat: localCoords.latitude, lng: localCoords.longitude },
         zoom: 15
     });
-    var marker = new google.maps.Marker({ position: { lat: localCoords.lat, lng: localCoords.lng }, map: map });
+    var marker = new google.maps.Marker({ position: { lat: localCoords.latitude, lng: localCoords.longitude }, map: map });
 }
 
 function APICall(data) {
+    console.log("to api:")
+    console.log(data)
     var mainDiv = $("#main");
     var resultDiv = $("#result");
     $.ajax({
@@ -38,9 +40,10 @@ function APICall(data) {
 function Update(statusURL, mainDiv, resultDiv) {
     $.getJSON(statusURL, function(response) {
         if (response.state === "SUCCESS" && response.hasOwnProperty("result")) {
-            coords = response.result.coords;
+            console.log(response);
+            coords = response.result.coordinates;
             console.log("success!");
-            resultDiv.html(`<p>You should try ${response.result.name}!</p>`);
+            resultDiv.html(`<p>You should try <a href="${response.result.url}" style="color: #000"><b>${response.result.name}</b></a>!</p>`);
             InitMap();
         }
         else if (response.state === "FAILURE") {

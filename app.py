@@ -1,5 +1,7 @@
 # General
 import os
+import json
+import requests
 # Flask
 from flask import Flask, render_template, flash, request, url_for, jsonify
 # Celery
@@ -24,9 +26,11 @@ celery.conf.update(app.config)
 @celery.task
 def APICall(data={}):
     """ Asynchronous call to ChompChap API """
-    result = api.Call(data)
+    # print(data)
+    # result = api.Predict(data)
+    result = requests.get("https://9c23bd01.ngrok.io/getrec",params={"words":" ".join(data["words"]), "latitude": data["coords"]["lat"], "longitude": data["coords"]["lng"]})
 
-    return { "result": result, "status": "SUCCESS" }
+    return { "result": result.json(), "status": "SUCCESS" }
 
 @app.route("/", methods=['GET', 'POST'])
 def Index():
@@ -41,7 +45,8 @@ def Features():
 @app.route("/query", methods=['POST'])
 def Query():
     """ Handle requests """
-    task = APICall.apply_async(kwargs={ "data": request.data })
+    parsed = json.loads(request.data)
+    task = APICall.apply_async(kwargs={ "data": parsed })
 
     return jsonify({}), 202, { "Location": url_for("Status", taskID=task.id) }
 
@@ -55,6 +60,9 @@ def Status(taskID):
     return jsonify(response)
 
 if __name__ == "__main__":
-    app.debug = True
+    # Load model
+    # api.Start()
+    # Start App
+    app.debug = False
     port = int(os.environ.get("PORT", 3000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, use_reloader=True)
